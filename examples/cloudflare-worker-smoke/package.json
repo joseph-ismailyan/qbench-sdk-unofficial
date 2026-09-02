@@ -1,0 +1,17 @@
+{
+  "name": "qbench-sdk-unofficial-cloudflare-worker-smoke",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/index.js && wrangler deploy --dry-run",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types --include-runtime false"
+  },
+  "dependencies": {
+    "qbench-sdk-unofficial": "file:../.."
+  },
+  "devDependencies": {
+    "wrangler": "^4.127.1"
+  }
+}

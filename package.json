@@ -1,0 +1,66 @@
+{
+  "name": "qbench-sdk-unofficial",
+  "version": "0.1.0",
+  "description": "Unofficial QBench JavaScript SDK developed by das.dev with reusable OAuth tokens and pluggable token storage",
+  "main": "index.js",
+  "exports": "./index.js",
+  "sideEffects": false,
+  "files": [
+    "index.js",
+    "src/",
+    "scripts/",
+    "examples/cloudflare-worker-smoke/README.md",
+    "examples/cloudflare-worker-smoke/package.json",
+    "examples/cloudflare-worker-smoke/src/",
+    "examples/cloudflare-worker-smoke/worker-configuration.d.ts",
+    "examples/cloudflare-worker-smoke/wrangler.jsonc",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "RELEASING.md"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "test": "node scripts/run-tests.mjs",
+    "test:coverage": "node scripts/run-tests.mjs --coverage",
+    "check": "node scripts/check-syntax.mjs",
+    "release:check": "npm run check && npm run test:coverage && npm pack --dry-run",
+    "prepublishOnly": "npm run check && npm run test:coverage"
+  },
+  "peerDependencies": {
+    "@aws-sdk/lib-dynamodb": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/lib-dynamodb": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "qbench",
+    "api",
+    "sdk",
+    "lims",
+    "oauth",
+    "cloudflare-workers",
+    "aws-lambda",
+    "unofficial"
+  ],
+  "author": {
+    "name": "Joseph Ismailyan",
+    "email": "joe@das.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joseph-ismailyan/qbench-sdk-unofficial.git"
+  },
+  "homepage": "https://github.com/joseph-ismailyan/qbench-sdk-unofficial#readme",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
