@@ -7,6 +7,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-02
+
+### Added
+
+- Bundled TypeScript declarations for the complete public client, handler, error, token, and adapter API.
+- A release guard that inspects the npm tarball and rejects tenant-specific files or content.
+
+### Changed
+
+- Keep QBench payload and response declarations intentionally open-ended so tenant-defined fields remain supported
+  without shipping any tenant-specific schema or business mapping.
+
 ## [0.1.0] - 2026-09-02
 
 ### Added

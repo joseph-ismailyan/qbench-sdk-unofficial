@@ -49,8 +49,8 @@ or tagging a release because an npm package name and version cannot be reused af
 ## Later releases
 
 - Update `CHANGELOG.md` and the version in `package.json` and `package-lock.json` together.
-- Run `npm run release:check`, inspect `npm publish --dry-run`, and install the generated tarball in a clean temporary
-  project before publishing.
+- Run `npm run release:check`, which includes declaration type-checking and the tenant-boundary tarball scan. Then
+  inspect `npm publish --dry-run` and install the generated tarball in a clean temporary project before publishing.
 - Publish each version once. Never try to replace an existing version.
 - After the first release exists, configure npm trusted publishing for the exact GitHub repository and a dedicated
   release workflow. Grant that workflow only `contents: read` and `id-token: write`; do not store a long-lived npm

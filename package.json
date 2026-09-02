@@ -1,12 +1,20 @@
 {
   "name": "qbench-sdk-unofficial",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Unofficial QBench JavaScript SDK developed by das.dev with reusable OAuth tokens and pluggable token storage",
   "main": "index.js",
-  "exports": "./index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "index.js",
+    "index.d.ts",
     "src/",
     "scripts/",
     "examples/cloudflare-worker-smoke/README.md",
@@ -27,8 +35,10 @@
   "scripts": {
     "test": "node scripts/run-tests.mjs",
     "test:coverage": "node scripts/run-tests.mjs --coverage",
-    "check": "node scripts/check-syntax.mjs",
-    "release:check": "npm run check && npm run test:coverage && npm pack --dry-run",
+    "typecheck": "tsc -p tsconfig.types.json",
+    "check:package-boundary": "node scripts/check-package-boundary.mjs",
+    "check": "node scripts/check-syntax.mjs && npm run typecheck && npm run check:package-boundary",
+    "release:check": "npm run check && npm run test:coverage && node scripts/pack-dry-run.mjs",
     "prepublishOnly": "npm run check && npm run test:coverage"
   },
   "peerDependencies": {
@@ -38,6 +48,9 @@
     "@aws-sdk/lib-dynamodb": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
   },
   "keywords": [
     "qbench",

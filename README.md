@@ -10,7 +10,7 @@ An ES module SDK for the QBench API with expiry-aware OAuth token reuse and plug
 for Node.js services, AWS Lambda, Cloudflare Workers, and other serverless runtimes where authenticating before every
 API request wastes requests and reaches rate limits faster.
 
-Current package version: `0.1.0`.
+Current package version: `0.1.1`.
 
 ## Why use it?
 
@@ -55,6 +55,25 @@ const orders = await qbench.order.listOrders({ page_num: 1, page_size: 50 });
 
 Create the client once and reuse it whenever the runtime permits. The default memory store is shared by clients in
 the same JavaScript process.
+
+## TypeScript and custom fields
+
+The package includes TypeScript declarations for the client, every resource handler, errors, token records, and token
+storage adapters. QBench request payloads and responses remain intentionally open-ended because each tenant can define
+its own fields and schemas. No tenant-specific schemas or business mappings are bundled with this package.
+
+Validate or narrow response data inside your application according to that tenant's configuration:
+
+```ts
+import { QBenchClient, type QBenchPayload } from 'qbench-sdk-unofficial';
+
+const customOrder: QBenchPayload = {
+  customer_id: 42,
+  my_custom_field: 'tenant-defined value',
+};
+
+await qbench.order.createOrders([customOrder]);
+```
 
 ## How token reuse works
 
