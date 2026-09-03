@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-02
+
+### Fixed
+
+- Refresh and retry once when QBench rejects a cached bearer token with HTTP `400` and `error_type: AuthError`,
+  matching the live API behavior while retaining the existing single-retry limit. Ordinary `400` validation failures
+  and permission `403` responses remain non-retryable.
+
 ## [0.1.1] - 2026-09-02
 
 ### Added

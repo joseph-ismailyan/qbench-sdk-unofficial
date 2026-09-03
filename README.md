@@ -84,7 +84,8 @@ For each API operation, the SDK:
 3. Authenticates with QBench only when no safe token exists.
 4. Saves the new token with its absolute expiration time.
 5. Stops using the token shortly before expiration. The default refresh buffer is 120 seconds.
-6. If QBench rejects a token with `401`, invalidates that token, refreshes, and retries the API operation once.
+6. If QBench rejects a token with `401` or its `400`/`AuthError` response, invalidates that token, refreshes, and
+   retries the API operation once.
 
 The SDK caches the returned bearer token. It does not cache the signed JWT assertion or the QBench client secret.
 Token-store failures are treated as cache failures: authentication continues and warnings never contain the token.
@@ -207,8 +208,9 @@ Workers KV is eventually consistent. Different locations can occasionally see th
 authenticate, especially on first use or near expiration. KV still avoids authentication before every ordinary
 request; it does not guarantee exactly one global refresh. A Durable Object is not required.
 
-KV cannot atomically compare and delete a value. After a `401`, the SDK bypasses that cached value, authenticates,
-and overwrites it. The adapter also skips KV writes for tokens that expire in less than KV's 60-second minimum.
+KV cannot atomically compare and delete a value. After a `401` or QBench's `400`/`AuthError` token rejection, the SDK
+bypasses that cached value, authenticates, and overwrites it. The adapter also skips KV writes for tokens that expire
+in less than KV's 60-second minimum.
 
 For a deployable, protected end-to-end verification fixture, see the
 [Cloudflare Worker live smoke test](examples/cloudflare-worker-smoke/README.md).
@@ -289,8 +291,10 @@ Transient retries apply only to `GET` and `HEAD` requests. The SDK retries rate 
 resets with bounded exponential backoff. It never automatically replays `POST`, `PATCH`, or `DELETE` after those
 failures, because the original mutation might already have been applied.
 
-The separate one-time `401` recovery applies to all methods: an unauthorized request is rejected before the operation
-is authorized, so the SDK refreshes the rejected bearer token and tries once with the replacement.
+The separate one-time rejected-token recovery applies to all methods: a request rejected for its bearer token is not
+authorized, so the SDK refreshes that token and tries once with the replacement. QBench may report an invalid bearer
+token as HTTP `400` with `error_type: AuthError` rather than `401`. Other `400` responses and permission `403`
+responses are not treated as token failures.
 
 ## Error handling and redaction
 

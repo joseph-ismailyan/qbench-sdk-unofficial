@@ -15,8 +15,8 @@ const RETRYABLE_METHODS = new Set(['GET', 'HEAD']);
 const USER_AGENT = 'qbench-sdk-unofficial/0.1.0';
 
 /**
- * Handles QBench API requests, including authentication, retries, one-time 401
- * recovery, rate limiting, and per-client concurrency limiting.
+ * Handles QBench API requests, including authentication, retries, one-time
+ * rejected-token recovery, rate limiting, and per-client concurrency limiting.
  */
 export class RequestHandler {
   #authManager;
@@ -110,7 +110,12 @@ export class RequestHandler {
         const response = await this.#makeHttpRequest(url, upperMethod, headers, body);
         return response.body;
       } catch (error) {
-        if (error instanceof QBenchApiError && error.status === 401 && authRetryCount === 0) {
+        if (
+          error instanceof QBenchApiError &&
+          (error.status === 401 ||
+            (error.status === 400 && error.responseBody?.error_type === 'AuthError')) &&
+          authRetryCount === 0
+        ) {
           authRetryCount++;
           const rejectedCurrentToken =
             typeof this.#authManager.invalidateAccessToken === 'function'

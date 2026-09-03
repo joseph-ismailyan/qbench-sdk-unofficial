@@ -1,6 +1,6 @@
 {
   "name": "qbench-sdk-unofficial",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Unofficial QBench JavaScript SDK developed by das.dev with reusable OAuth tokens and pluggable token storage",
   "main": "index.js",
   "types": "index.d.ts",

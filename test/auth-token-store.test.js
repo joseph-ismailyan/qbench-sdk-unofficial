@@ -69,6 +69,21 @@ test('refreshes and retries an API request once after a 401', async () => {
   assert.deepEqual(calls, { auth: 2, api: 2 });
 });
 
+test('refreshes and retries once after QBench rejects a token with 400 AuthError', async () => {
+  const calls = { auth: 0, api: 0 };
+  const fetch = createQBenchFetch(calls, {
+    rejectFirstToken: true,
+    rejectionStatus: 400,
+    rejectionBody: { error_type: 'AuthError' },
+  });
+  const client = createClient({ fetch, tokenStore: new MemoryTokenStore() });
+
+  const response = await client.customer.listCustomers();
+
+  assert.equal(response.ok, true);
+  assert.deepEqual(calls, { auth: 2, api: 2 });
+});
+
 test('does not retry authentication more than once after repeated 401 responses', async () => {
   const calls = { auth: 0, api: 0 };
   const fetch = createQBenchFetch(calls, { alwaysUnauthorized: true });
@@ -79,6 +94,50 @@ test('does not retry authentication more than once after repeated 401 responses'
     (error) => error instanceof QBenchApiError && error.status === 401
   );
   assert.deepEqual(calls, { auth: 2, api: 2 });
+});
+
+test('does not retry authentication more than once after repeated 400 AuthError responses', async () => {
+  const calls = { auth: 0, api: 0 };
+  const fetch = createQBenchFetch(calls, {
+    alwaysUnauthorized: true,
+    rejectionStatus: 400,
+    rejectionBody: { error_type: 'AuthError' },
+  });
+  const client = createClient({ fetch, tokenStore: new MemoryTokenStore() });
+
+  await assert.rejects(
+    () => client.customer.listCustomers(),
+    (error) => error instanceof QBenchApiError && error.status === 400
+  );
+  assert.deepEqual(calls, { auth: 2, api: 2 });
+});
+
+test('does not refresh authentication after an ordinary validation 400', async () => {
+  const calls = { auth: 0, api: 0 };
+  const fetch = createQBenchFetch(calls, {
+    alwaysUnauthorized: true,
+    rejectionStatus: 400,
+    rejectionBody: { error_type: 'ValidationError' },
+  });
+  const client = createClient({ fetch, tokenStore: new MemoryTokenStore() });
+
+  await assert.rejects(
+    () => client.customer.listCustomers(),
+    (error) => error instanceof QBenchApiError && error.status === 400
+  );
+  assert.deepEqual(calls, { auth: 1, api: 1 });
+});
+
+test('does not refresh authentication after a permission 403', async () => {
+  const calls = { auth: 0, api: 0 };
+  const fetch = createQBenchFetch(calls, { alwaysUnauthorized: true, rejectionStatus: 403 });
+  const client = createClient({ fetch, tokenStore: new MemoryTokenStore() });
+
+  await assert.rejects(
+    () => client.customer.listCustomers(),
+    (error) => error instanceof QBenchApiError && error.status === 403
+  );
+  assert.deepEqual(calls, { auth: 1, api: 1 });
 });
 
 test('Cloudflare KV adapter stores the token until its actual expiry', async () => {
@@ -238,7 +297,14 @@ function createClient({ fetch, tokenStore, now }) {
 
 function createQBenchFetch(
   calls,
-  { expiresIn = 3600, authDelayMs = 0, rejectFirstToken = false, alwaysUnauthorized = false } = {}
+  {
+    expiresIn = 3600,
+    authDelayMs = 0,
+    rejectFirstToken = false,
+    alwaysUnauthorized = false,
+    rejectionStatus = 401,
+    rejectionBody = { error: 'invalid_token' },
+  } = {}
 ) {
   return async (url, init) => {
     const parsedUrl = new URL(url);
@@ -261,7 +327,7 @@ function createQBenchFetch(
     assert.equal(parsedUrl.pathname, '/qbench/api/v2/customers');
     const accessToken = init.headers.Authorization.replace('Bearer ', '');
     if (alwaysUnauthorized || (rejectFirstToken && accessToken === 'token-1')) {
-      return jsonResponse({ error: 'invalid_token' }, 401);
+      return jsonResponse(rejectionBody, rejectionStatus);
     }
     return jsonResponse({ ok: true, accessToken });
   };
